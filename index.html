@@ -1,0 +1,248 @@
+<!--
+  Proyecto: Tarjeta en sobre (index.html)
+  Instrucciones:
+  1) Guarda este archivo como `index.html` dentro de una carpeta.
+  2) Coloca tus archivos `sylayjaden.jpg` y `melodia.mp3` en la MISMA carpeta.
+  3) Abre `index.html` en el navegador (o usa Live Server en VS Code) y haz clic en "ÁBREME".
+-->
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tarjeta - Ábreme</title>
+  <style>
+    :root {
+      --bg: #f5efe6;
+      --accent: #ff6f61;
+      --accent2: #ff9671;
+      --paper: #fff;
+      --text: #333;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #fde2e4, #fff1f2);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+    .wrap { display: grid; place-items: center; padding: 24px; }
+
+    /* Envelope */
+    .envelope {
+      width: 360px;
+      height: 240px;
+      position: relative;
+      perspective: 1000px;
+    }
+    .back {
+      position: absolute;
+      inset: 0;
+      background: var(--paper);
+      border-radius: 8px;
+      border: 2px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+    }
+    .flap {
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 50%;
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      transform-origin: top center;
+      transition: transform .8s cubic-bezier(.2,.9,.3,1);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    }
+    .seal {
+      position: absolute;
+      left: 50%;
+      top: 40%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.2);
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: #fff;
+      letter-spacing: 2px;
+    }
+
+    .front {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    .label {
+      color: var(--paper);
+      font-weight: bold;
+      font-size: 24px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .open-btn {
+      margin-top: 12px;
+      background: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      transition: transform .15s ease, background .3s;
+    }
+    .open-btn:hover { background: #ffe0e0; }
+    .open-btn:active { transform: scale(.95); }
+
+    /* Card inside */
+    .card {
+      position: absolute;
+      left: 50%; top: 8%;
+      transform: translate(-50%, 10%);
+      width: 90%;
+      max-width: 360px;
+      background: var(--paper);
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .9s cubic-bezier(.16,.98,.35,1);
+      z-index: 2;
+    }
+    .card.opened {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0%);
+    }
+    .card .photo {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+    .card .content {
+      padding: 18px;
+      color: var(--text);
+      line-height: 1.5;
+      text-align: justify;
+    }
+    .card h2 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      color: var(--accent);
+    }
+    .card p {
+      margin: 0 0 12px 0;
+      font-size: 15px;
+    }
+
+    /* Envelope opened state */
+    .envelope.open .flap { transform: rotateX(180deg) translateY(-18px); }
+
+    /* Floating hearts */
+    .floating-heart {
+      position: absolute;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      transform: rotate(-45deg);
+      border-radius: 5px;
+      animation: floatUp 6s linear infinite;
+      opacity: 0.8;
+      z-index: 0;
+    }
+    .floating-heart:before, .floating-heart:after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .floating-heart:before { top: -10px; left: 0; }
+    .floating-heart:after { left: 10px; top: 0; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1) rotate(-45deg); opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-800px) scale(1.4) rotate(-45deg); opacity: 0; }
+    }
+
+    @media (max-width: 420px) {
+      .envelope { width: 300px; height: 200px; }
+      .card { width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="envelope" id="envelope">
+      <div class="back"></div>
+      <div class="flap" id="flap">
+        <div class="seal">Ábreme</div>
+      </div>
+      <div class="front">
+        <div class="label">Para mi amor</div>
+        <button class="open-btn" id="openBtn">Ábreme ❤️</button>
+      </div>
+
+      <div class="card" id="card">
+        <img src="sylayjaden.jpg" alt="Foto" class="photo" onerror="this.style.display='none'">
+        <div class="content">
+          <h2>Para ti, con todo mi cariño</h2>
+          <p>
+            Eres lo mejor que me ha pasado en esta vida, tenemos una bonita relación y me alegra tenerlos en mi vida, espero poder pasar muchos años en compañía de los 2. Será nuestra segunda Navidad, espero esta vez podamos pasarla más juntos y recibir este nuevo año de la mejor manera.
+          </p>
+          <p>
+            Gracias por ser ese motorcito que me anima a no rendirme y seguir adelante, por apoyarme en mis locuras y por estar ahí para escucharme. Te amo, te amooo muchíííííííííííísimo.
+          </p>
+          <p style="font-size:13px;opacity:.8;margin-top:8px">— Con todo mi corazón</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const envelope = document.getElementById('envelope');
+    const openBtn = document.getElementById('openBtn');
+    const card = document.getElementById('card');
+    const flap = document.getElementById('flap');
+
+    const audio = new Audio('melodia.mp3');
+    audio.preload = 'auto';
+
+    function openEnvelope() {
+      envelope.classList.add('open');
+      setTimeout(()=>{ card.classList.add('opened'); }, 500);
+      audio.currentTime = 0;
+      audio.play().catch(err => console.warn('No se pudo reproducir el audio:', err));
+      openBtn.disabled = true;
+      openBtn.textContent = 'Abierto 💌';
+      createFloatingHearts();
+    }
+
+    openBtn.addEventListener('click', openEnvelope);
+    flap.addEventListener('click', openEnvelope);
+
+    // Generador de corazones flotantes
+    function createFloatingHearts() {
+      setInterval(() => {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.style.left = Math.random() * window.innerWidth + 'px';
+        heart.style.bottom = '-30px';
+        heart.style.background = Math.random() > 0.5 ? 'var(--accent)' : 'var(--accent2)';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 6000);
+      }, 800);
+    }
+  </script>
+</body>
+</html>
